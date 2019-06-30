@@ -11,7 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "command-exists": "^1.2.8",
+    "ethers": "^4.0.32",
+    "fs-extra": "^8.1.0",
     "parcel-bundler": "^1.12.3",
-    "sol2js": "^0.1.0"
+    "sol2js": "file:../sol2js"
   }
 }

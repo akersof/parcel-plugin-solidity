@@ -2,10 +2,14 @@ const path = require('path');
 const util = require('util');
 const {Asset} = require('parcel-bundler');
 const fs = require('@parcel/fs');
+const fse = require('fs-extra');
 const commandExists = require('command-exists');
 const childProcess = require('child_process');
 const exec = util.promisify(childProcess.execFile); //maybe use the promisify from parcel ?
 const md5 = require('parcel-bundler/src/utils/md5');
+const sol2js = require('sol2js');
+const ethers = require('ethers');
+
 
 let solcInstalled = false;
 const COMBINED_FILENAME = "combined.json";
@@ -45,11 +49,10 @@ class SolidityAsset extends Asset {
 
     async parse(code) {
         console.log("i am parsed");
+        await sol2js.compile(this.name, path.join(this.options.cacheDir, path.basename(this.name).slice(0, -4)));
         // Install solc compiler
-        await this.installSolc();
-        await this.solcCompile();
-        const contract_path = path.join(this.options.rootDir, "contracts");
-        await fs.mkdirp(contract_path);
+        //await this.installSolc();
+        //await this.solcCompile();
     }
 
     async installSolc() {
@@ -72,19 +75,6 @@ class SolidityAsset extends Asset {
         await fs.mkdirp(this.path);
         let name = md5(this.name);
         //run solc to compile the code
-        const args = [
-            '--combined-json',
-            'abi,bin',
-            this.name,
-            '--overwrite',
-            '-o',
-            this.path
-        ];
-        //At this point a combined.json file is in the cache.
-        await exec('solc', args);
-        const json = require(path.join(this.path, COMBINED_FILENAME));
-        const contracts_json = json.contracts;
-        console.log(contracts_json);
         //for(var key in contracts_json) {
         //    if((path.basename(key).split(':'))[0] === path.basename(this.name))
         //        console.log(contracts_json[key]);
@@ -100,9 +90,23 @@ class SolidityAsset extends Asset {
         console.log("collecting dependencies");
     }
 
+    async deploy() {
+        const provider = new ethers.providers.JsonRpcProvider("http://localhost:7545");
+        const signer = provider.getSigner(0);
+       // let factory = new ethers.ContractFactory(so.abi, so.bin,signer)
+    }
+
     async generate() {
+
+        this.path = path.join(this.options.cacheDir, this.basename.slice(0, -4));
         console.log("generating");
         let config = await this.getConfig();
+        //const contract_path = path.join(this.options.rootDir, config.path);
+        const contract_path = path.dirname(this.name);
+        console.log("rootDir:", this.options.rootDir);
+        console.log('CONTRACT:', contract_path);
+        await fs.mkdirp(contract_path);
+        await fse.copy(this.path, contract_path);
         return [
             {
                 type: 'js',
