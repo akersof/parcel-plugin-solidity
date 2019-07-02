@@ -1,6 +1,6 @@
 {
   "name": "parcel-plugin-solidity",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Parcel plugin for solidity contract",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,6 @@
     "ethers": "^4.0.32",
     "fs-extra": "^8.1.0",
     "parcel-bundler": "^1.12.3",
-    "sol2js": "file:../sol2js"
+    "sol2js": "^0.1.1"
   }
 }
